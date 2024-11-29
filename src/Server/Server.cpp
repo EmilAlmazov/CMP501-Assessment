@@ -21,53 +21,58 @@ void Server::run() {
     // 2 - Both clients connected
     // 2.1 - send a start message to both clients
     sf::Packet packet;
-    packet << "start";
-    for (const auto &client: clients_) {
-        if (client->send(packet) != sf::Socket::Done) {
+    size_t paddleIndex = 0;
+
+    for (auto it = clients_.begin(); it != clients_.end(); ++it, ++paddleIndex) {
+        packet.clear();
+        packet << paddleIndex << "start";
+        if ((*it)->send(packet) != sf::Socket::Done) {
             std::cerr << "Error sending start message to client" << std::endl;
         }
     }
 
     // 2.2 Run the game
+    Pong game{true};
     while (true) {
-        game_.run();
+        game.run();
 
-        float paddle_pos_x;
-        float paddle_pos_y;
-
-        if (selector_.isReady(udp_socket_)) {
-            sf::Packet packet;
-            sf::IpAddress client_ip;
-            unsigned short client_port;
-
-            // 2.2.1 - RECEIVE data from clients
-            if (udp_socket_.receive(packet, client_ip, client_port) != sf::Socket::Done) {
-                std::cerr << "Error receiving data from client" << std::endl;
-                break;
-            }
-
-            if (packet >> paddle_pos_x >> paddle_pos_y) {
-                std::cout << "Received paddle position: " << paddle_pos_x << ", " << paddle_pos_y << std::endl;
-            } else {
-                std::cerr << "Error reading data from packet" << std::endl;
-                break;
-            }
-
-            // 2.2.2 - UPDATE GAME - paddles positions
-            size_t client_index = client_ip == client_ips_[0] && client_port == client_ports_[0] ? 0 : 1;
-            game_.setPaddlePosition(sf::Vector2f{paddle_pos_x, paddle_pos_y}, client_index);
-
-            // 2.2.3 - SEND to other client - so +1 % 2
-            packet << paddle_pos_x << paddle_pos_y;
-            size_t other_client_index = (client_index + 1) % 2;
-            if (udp_socket_.send(packet, client_ips_[other_client_index], client_ports_[other_client_index]) !=
-                sf::Socket::Done) {
-                std::cerr << "Error sending data to client" << std::endl;
-            }
-        }
-
-        // TODO: Send ball position to both clients regularly
-        send();
+        // TODO: move to Pong::run()
+        // float paddle_pos_x;
+        // float paddle_pos_y;
+        //
+        // if (selector_.isReady(udp_socket_)) {
+        //     sf::Packet packet;
+        //     sf::IpAddress client_ip;
+        //     unsigned short client_port;
+        //
+        //     // 2.2.1 - RECEIVE data from clients
+        //     if (udp_socket_.receive(packet, client_ip, client_port) != sf::Socket::Done) {
+        //         std::cerr << "Error receiving data from client" << std::endl;
+        //         break;
+        //     }
+        //
+        //     if (packet >> paddle_pos_x >> paddle_pos_y) {
+        //         std::cout << "Received paddle position: " << paddle_pos_x << ", " << paddle_pos_y << std::endl;
+        //     } else {
+        //         std::cerr << "Error reading data from packet" << std::endl;
+        //         break;
+        //     }
+        //
+        //     // 2.2.2 - UPDATE GAME - paddles positions
+        //     size_t client_index = client_ip == client_ips_[0] && client_port == client_ports_[0] ? 0 : 1;
+        //     game.setPaddlePosition(sf::Vector2f{paddle_pos_x, paddle_pos_y}, client_index);
+        //
+        //     // 2.2.3 - SEND to other client - so +1 % 2
+        //     packet << 0 << paddle_pos_x << paddle_pos_y;
+        //     size_t other_client_index = (client_index + 1) % 2;
+        //     if (udp_socket_.send(packet, client_ips_[other_client_index], client_ports_[other_client_index]) !=
+        //         sf::Socket::Done) {
+        //         std::cerr << "Error sending data to client" << std::endl;
+        //     }
+        // }
+        //
+        // // TODO: Send ball position to both clients regularly
+        // send(game);
     }
 }
 
@@ -123,8 +128,15 @@ sf::Packet Server::receive() {
     return {};
 }
 
-// Send ball position and timestampe to clients
-void Server::send() {
+// Send ball position to clients
+void Server::send(const Pong &game) {
+    for (size_t i = 0; i < clients_.size(); ++i) {
+        sf::Packet packet;
+        packet << 1 << game.getBallPosition().x << game.getBallPosition().y;
+        if (udp_socket_.send(packet, client_ips_[i], client_ports_[i]) != sf::Socket::Done) {
+            std::cerr << "Error sending data to client" << std::endl;
+        }
+    }
 }
 
 

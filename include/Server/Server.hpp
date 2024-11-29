@@ -26,13 +26,10 @@ private:
 
 	sf::UdpSocket udp_socket_;
 
-	// Pong game
-	Pong game_{false};
-
 	void listen();
 	void handleNewConnections();
 
 	sf::Packet receive();
-	void send();
+	void send(const Pong &game);
 	void handleDisconnect();
 };
