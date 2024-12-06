@@ -1,23 +1,25 @@
 #pragma once
 
+#include "Pong.hpp"
 #include <SFML/Network.hpp>
 #include <memory>
-
-#include "Pong.hpp"
 
 class Client
 {
 public:
-	Client(const std::string ip, unsigned short tcp_port, unsigned short udp_port) : server_ip_(ip), server_tcp_port_(tcp_port), server_udp_port_(udp_port) {}
+	Client(const std::string &ip, const unsigned short tcp_port, const unsigned short udp_port) : server_ip_(ip), server_tcp_port_(tcp_port), server_udp_port_(udp_port), paddle_index_() {}
 
 	void run();
-	void sendPaddlePosition(const sf::Vector2f& position);
-	bool receiveOtherPlayerData(sf::Vector2f& ball_position, sf::Vector2f& other_paddle_position);
 
-	int getPaddleIndex() const { return paddleIndex_; }
+	// Getters
+	[[nodiscard]] size_t getPaddleIndex() const { return paddle_index_; }
 
 private:
-	void connectToServer();
+	void connectToServer() const;
+	void queueInput(const std::string& input);
+	void sendInputsToServerInOnePacket();
+	void sendInputsToServer(const std::string& input);
+	void receiveSnapshotFromServer();
 
 
 	std::unique_ptr<sf::TcpSocket> tcp_socket_ = std::make_unique<sf::TcpSocket>();
@@ -26,5 +28,9 @@ private:
 	unsigned short server_tcp_port_;
 	unsigned short server_udp_port_;
 
-	int paddleIndex_;
+	std::vector<std::string> input_queue_;
+
+	size_t paddle_index_;
+
+	std::unique_ptr<Pong> game_;
 };

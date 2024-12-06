@@ -1,35 +1,38 @@
 #pragma once
+#include "Pong.hpp"
 #include <SFML/Network.hpp>
 #include <list>
 #include <memory>
 
-#include "Pong.hpp"
-
-class Server
-{
+class Server {
 public:
-	Server(const std::string ip, unsigned short tcp_port, unsigned short udp_port) : ip_(ip), tcp_port_(tcp_port), udp_port_(udp_port) {}
+    Server(const std::string& server_ip, const unsigned short server_tcp_port, const unsigned short server_udp_port)
+        : server_ip_(server_ip), server_tcp_port_(server_tcp_port), server_udp_port_(server_udp_port)
+    {}
 
-	void run();
+    void run();
 
 private:
-	sf::IpAddress ip_;
-	unsigned short tcp_port_;
-	unsigned short udp_port_;
+    void listen();
+    void handleNewConnections();
 
-	sf::TcpListener listener_;
-	sf::SocketSelector selector_;
-	
-	std::list<std::unique_ptr<sf::TcpSocket>> clients_;
-	std::vector<sf::IpAddress> client_ips_;
-	std::vector<unsigned short> client_ports_;
+    void receiveInputFromClients();
+    void updateGameBasedOnInput();
+    void createAndSendSnapshotToClients();
 
-	sf::UdpSocket udp_socket_;
+    sf::IpAddress server_ip_;
+    unsigned short server_tcp_port_;
+    unsigned short server_udp_port_;
 
-	void listen();
-	void handleNewConnections();
+    sf::TcpListener listener_;
+    sf::SocketSelector selector_;
 
-	sf::Packet receive();
-	void send(const Pong &game);
-	void handleDisconnect();
+    std::list<std::unique_ptr<sf::TcpSocket>> clients_;
+    std::vector<sf::IpAddress> client_ips_;
+    std::vector<unsigned short> client_ports_;
+    sf::UdpSocket udp_socket_;
+
+    std::unique_ptr<Pong> game_;
+
+    std::vector<std::pair<size_t, std::string>> client_inputs_queue_;
 };

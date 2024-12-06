@@ -23,15 +23,17 @@ FetchContent_Declare(SFML
 FetchContent_MakeAvailable(SFML)
 
 # Define Server + Game executable
-add_executable(Server "src/Server/Server.cpp" "src/Server/main.cpp" "src/Game/Pong.cpp")
+add_executable(Server "src/Server/Server.cpp" "src/Server/main.cpp" "src/Game/Pong.cpp" "src/Client/Client.cpp"
+        src/Snapshot.cpp)
 target_link_libraries(Server PRIVATE sfml-graphics sfml-audio sfml-network)
-target_include_directories(Server PRIVATE include/Server include/Game)
+target_include_directories(Server PRIVATE include include/Server include/Game include/Client)
 target_compile_features(Server PRIVATE cxx_std_17)
 
 # Define Client + Game executable
-add_executable(Client "src/Client/Client.cpp" "src/Client/main.cpp" "src/Game/Pong.cpp")
+add_executable(Client "src/Client/Client.cpp" "src/Client/main.cpp" "src/Game/Pong.cpp" "src/Server/Server.cpp"
+        src/Snapshot.cpp)
 target_link_libraries(Client PRIVATE sfml-graphics sfml-audio sfml-network)
-target_include_directories(Client PRIVATE include/Client include/Game)
+target_include_directories(Client PRIVATE include include/Client include/Game include/Server)
 target_compile_features(Client PRIVATE cxx_std_17)
 
 if(WIN32)
