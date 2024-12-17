@@ -35,7 +35,7 @@ BraceWrapping:
   SplitEmptyNamespace: false
 BreakBeforeBinaryOperators: All
 BreakBeforeConceptDeclarations: false
-ColumnLimit: 150
+ColumnLimit: 120
 IncludeBlocks: Merge
 IndentExternBlock: Indent
 IndentRequiresClause: false

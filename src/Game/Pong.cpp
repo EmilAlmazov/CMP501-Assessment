@@ -1,9 +1,11 @@
 #include "Pong.hpp"
+#include <iostream>
 
-Pong::Pong(std::atomic<bool> game_started, const std::string& clientOrServer)
-    : window_(sf::VideoMode(1920, 1080), "Pong Multiplayer: " + clientOrServer, sf::Style::Default), game_started_(game_started),
-      left_paddle_(sf::Vector2f(50.0f, 200.0f)), right_paddle_(sf::Vector2f(50.0f, 200.0f)), ball_(sf::Vector2f(50.0f, 50.0f)),
-      ball_speed_(5.0f, 5.0f), left_score_(0), right_score_(0)
+Pong::Pong(bool game_started, const std::string& clientOrServer)
+    : window_(sf::VideoMode(1920, 1080), "Pong Multiplayer: " + clientOrServer, sf::Style::Default),
+      game_started_(game_started), left_paddle_(sf::Vector2f(50.0f, 200.0f)),
+      right_paddle_(sf::Vector2f(50.0f, 200.0f)), ball_(sf::Vector2f(50.0f, 50.0f)), ball_speed_(5.0f, 5.0f),
+      left_score_(0), right_score_(0)
 {
     window_.setFramerateLimit(144);
 
@@ -22,11 +24,13 @@ Pong::Pong(std::atomic<bool> game_started, const std::string& clientOrServer)
     left_score_text_.setCharacterSize(24);
     left_score_text_.setFillColor(sf::Color::White);
     left_score_text_.setPosition(1920.0f / 2 - 100, 10);
+    left_score_text_.setString(std::to_string(left_score_));
 
     right_score_text_.setFont(font_);
     right_score_text_.setCharacterSize(24);
     right_score_text_.setFillColor(sf::Color::White);
     right_score_text_.setPosition(1920.0f / 2 + 100, 10);
+    right_score_text_.setString(std::to_string(right_score_));
 
     fps_.setFont(font_);
     fps_.setCharacterSize(24);
@@ -42,9 +46,8 @@ Pong::~Pong() {}
 void Pong::handlePhysics()
 {
     ball_.move(ball_speed_);
-    // if (game_started_) {
-        // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) { ball_.move(ball_speed_); }
-    // }
+
+    // if (game_started_) { ball_.move(ball_speed_); }
     // else {
     //     ball_.setPosition(left_paddle_.getPosition().x + left_paddle_.getSize().x + 2.0f,
     //                       left_paddle_.getPosition().y + left_paddle_.getSize().y / 2 - ball_.getSize().y / 2);
@@ -81,7 +84,9 @@ void Pong::handlePaddleCollision(sf::RectangleShape& paddle)
         ball_speed_.x *= -1;
 
         // Adjust ball position to prevent it from getting stuck inside the paddle
-        if (ball_.getPosition().x < paddle.getPosition().x) { ball_.setPosition(paddle.getPosition().x - ball_.getSize().x, ball_.getPosition().y); }
+        if (ball_.getPosition().x < paddle.getPosition().x) {
+            ball_.setPosition(paddle.getPosition().x - ball_.getSize().x, ball_.getPosition().y);
+        }
         else {
             ball_.setPosition(paddle.getPosition().x + paddle.getSize().x, ball_.getPosition().y);
         }
@@ -90,16 +95,31 @@ void Pong::handlePaddleCollision(sf::RectangleShape& paddle)
 }
 
 // === CLIENT ===
-std::string Pong::getInput(const size_t paddle_index) const
+std::string Pong::getInput(const size_t paddle_index)
 {
     // TODO: Enable both clients to use W/S or Up/Down keys (requires getting current focused window)
+
+    // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) { return "Space"; }
+
     if (paddle_index == 0) {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && left_paddle_.getPosition().y > 0) { return "W"; }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && left_paddle_.getPosition().y < 1080 - 200) { return "S"; }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && left_paddle_.getPosition().y > 0) {
+            left_paddle_.move(0.0f, -PADDLE_SPEED);
+            return "W";
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && left_paddle_.getPosition().y < 1080 - 200) {
+            left_paddle_.move(0.0f, PADDLE_SPEED);
+            return "S";
+        }
     }
     else if (paddle_index == 1) {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && right_paddle_.getPosition().y > 0) { return "Up"; }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && right_paddle_.getPosition().y < 1080 - 200) { return "Down"; }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && right_paddle_.getPosition().y > 0) {
+            right_paddle_.move(0.0f, -PADDLE_SPEED);
+            return "Up";
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && right_paddle_.getPosition().y < 1080 - 200) {
+            right_paddle_.move(0.0f, PADDLE_SPEED);
+            return "Down";
+        }
     }
     return "";
 }

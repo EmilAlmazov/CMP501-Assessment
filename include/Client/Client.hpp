@@ -2,35 +2,38 @@
 
 #include "Pong.hpp"
 #include <SFML/Network.hpp>
+#include <Snapshot.hpp>
 #include <memory>
 
-class Client
-{
+class Client {
 public:
-	Client(const std::string &ip, const unsigned short tcp_port, const unsigned short udp_port) : server_ip_(ip), server_tcp_port_(tcp_port), server_udp_port_(udp_port), paddle_index_() {}
+    Client(const std::string& ip, const unsigned short tcp_port, const unsigned short udp_port)
+        : server_ip_(ip), server_tcp_port_(tcp_port), server_udp_port_(udp_port), paddle_index_()
+    {}
 
-	void run();
+    void run();
 
-	// Getters
-	[[nodiscard]] size_t getPaddleIndex() const { return paddle_index_; }
+    // Getters
+    [[nodiscard]] size_t getPaddleIndex() const { return paddle_index_; }
 
 private:
-	void connectToServer() const;
-	void queueInput(const std::string& input);
-	void sendInputsToServerInOnePacket();
-	void sendInputsToServer(const std::string& input);
-	void receiveSnapshotFromServer();
+    void connectToServer();
+    void queueInput(const std::string& input);
+    void sendInputsToServerInOnePacket();
+    void sendInputsToServer(const std::string& input);
+    void receiveSnapshotFromServer();
 
+    std::unique_ptr<sf::TcpSocket> tcp_socket_ = std::make_unique<sf::TcpSocket>();
+    sf::UdpSocket udp_socket_;
+    sf::IpAddress server_ip_;
+    unsigned short server_tcp_port_;
+    unsigned short server_udp_port_;
 
-	std::unique_ptr<sf::TcpSocket> tcp_socket_ = std::make_unique<sf::TcpSocket>();
-	sf::UdpSocket udp_socket_;
-	sf::IpAddress server_ip_;
-	unsigned short server_tcp_port_;
-	unsigned short server_udp_port_;
+    std::vector<std::string> input_queue_;
 
-	std::vector<std::string> input_queue_;
+    size_t paddle_index_;
 
-	size_t paddle_index_;
-
-	std::unique_ptr<Pong> game_;
+    std::unique_ptr<Pong> game_;
+    sf::Clock clock_;
+    Snapshot current_snapshot_;
 };

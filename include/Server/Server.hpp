@@ -1,13 +1,15 @@
 #pragma once
 #include "Pong.hpp"
 #include <SFML/Network.hpp>
+#include <Snapshot.hpp>
 #include <list>
 #include <memory>
 
 class Server {
 public:
     Server(const std::string& server_ip, const unsigned short server_tcp_port, const unsigned short server_udp_port)
-        : server_ip_(server_ip), server_tcp_port_(server_tcp_port), server_udp_port_(server_udp_port)
+        : server_ip_(server_ip), server_tcp_port_(server_tcp_port), server_udp_port_(server_udp_port),
+          previous_snapshot_()
     {}
 
     void run();
@@ -35,4 +37,6 @@ private:
     std::unique_ptr<Pong> game_;
 
     std::vector<std::pair<size_t, std::string>> client_inputs_queue_;
+
+    Snapshot previous_snapshot_;
 };

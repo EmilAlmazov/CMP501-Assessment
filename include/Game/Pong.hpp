@@ -3,9 +3,11 @@
 #include <SFML/Graphics.hpp>
 #include <atomic>
 
+constexpr float PADDLE_SPEED = 5.0f;
+
 class Pong {
 public:
-    explicit Pong(std::atomic<bool> game_started, const std::string& clientOrServer);
+    explicit Pong(bool game_started, const std::string& clientOrServer);
 
     ~Pong();
 
@@ -19,21 +21,26 @@ public:
     sf::Vector2f getBallSpeed() const { return ball_speed_; }
     int getLeftScore() const { return left_score_; }
     int getRightScore() const { return right_score_; }
+    sf::Text& getLeftScoreText() { return left_score_text_; }
+    sf::Text& getRightScoreText() { return right_score_text_; }
+
+    bool getGameStarted() const { return game_started_; }
 
     // === SETTERS ===
     void setLeftPaddlePosition(const sf::Vector2f& position) { left_paddle_.setPosition(position); }
     void setRightPaddlePosition(const sf::Vector2f& position) { right_paddle_.setPosition(position); }
     void setBallPosition(const sf::Vector2f& position) { ball_.setPosition(position); }
     void setBallSpeed(const sf::Vector2f& speed) { ball_speed_ = speed; }
-    void setLeftScore(int score) { left_score_ = score; }
-    void setRightScore(int score) { right_score_ = score; }
+    void setLeftScore(const int score) { left_score_ = score; }
+    void setRightScore(const int score) { right_score_ = score; }
 
+    void setGameStarted(const bool game_started) const { game_started_ = game_started; }
 
     // SERVER
     void handlePhysics();
 
     // CLIENT
-    std::string getInput(size_t) const;
+    std::string getInput(size_t);
     void render();
 
 private:
@@ -45,7 +52,7 @@ private:
     // === VARIABLES ===
     // Game logic
     sf::RenderWindow window_;
-    std::atomic<bool>& game_started_;
+    bool& game_started_;
 
     // Objects
     sf::RectangleShape left_paddle_;
