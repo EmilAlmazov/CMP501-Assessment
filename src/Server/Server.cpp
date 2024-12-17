@@ -50,22 +50,26 @@ void Server::run()
     game_ = std::make_unique<Pong>(false, "Server");
     previous_snapshot_ = Snapshot(game_);
     sf::Clock clock;
-    while (game_->windowIsOpen()) {
-        for (auto event = sf::Event(); game_->getWindow().pollEvent(event);) {
-            if (event.type == sf::Event::Closed) { game_->getWindow().close(); }
-        }
+    sf::Clock game_clock;
 
+    // Run main loop until one of the clients disconnects
+    while (clients_.size() == 2) {
         // run the game
-        receiveInputFromClients();
-        updateGameBasedOnInput();
-        game_->handlePhysics();
-        game_->render(); // DEBUG for now, TODO: Remove this line
+        if (constexpr size_t framesPerSecond = 144;
+            game_clock.getElapsedTime().asMilliseconds() >= 1000 / framesPerSecond) {
+            receiveInputFromClients();
+            updateGameBasedOnInput();
+            game_->handlePhysics();
 
-        if (constexpr size_t snapshotsPerSecond = 20;
-            clock.getElapsedTime().asMilliseconds() >= 1000 / snapshotsPerSecond) {
-            createAndSendSnapshotToClients();
-            clock.restart();
+            if (constexpr size_t snapshotsPerSecond = 20;
+                clock.getElapsedTime().asMilliseconds() >= 1000 / snapshotsPerSecond) {
+                createAndSendSnapshotToClients();
+                clock.restart();
+            }
+
+            game_clock.restart();
         }
+        // game_->render(); // DEBUG for now, TODO: Remove this line
     }
 }
 

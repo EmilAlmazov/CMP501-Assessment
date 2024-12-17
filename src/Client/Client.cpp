@@ -59,22 +59,27 @@ void Client::run()
     // 6 - Run the game
     game_ = std::make_unique<Pong>(false, "Client " + std::to_string(paddle_index_));
     sf::Clock clock;
-    sf::Clock clock2;
+    sf::Clock game_clock;
     while (game_->windowIsOpen()) {
         for (auto event = sf::Event(); game_->getWindow().pollEvent(event);) {
             if (event.type == sf::Event::Closed) { game_->getWindow().close(); }
         }
 
         // sendInputsToServer(game_->getInput(paddle_index_));
-        queueInput(game_->getInput(paddle_index_));
 
-        if (size_t packetsPerSecond = 30; clock.getElapsedTime().asMilliseconds() >= 1000 / packetsPerSecond) {
-            sendInputsToServerInOnePacket();
-            clock.restart();
+        if (constexpr size_t framesPerSecond = 144;
+            game_clock.getElapsedTime().asMilliseconds() >= 1000 / framesPerSecond) {
+            queueInput(game_->getInput(paddle_index_));
+            if (size_t packetsPerSecond = 30; clock.getElapsedTime().asMilliseconds() >= 1000 / packetsPerSecond) {
+                sendInputsToServerInOnePacket();
+                clock.restart();
+            }
+
+            receiveSnapshotFromServer();
+            game_->render();
+
+            game_clock.restart();
         }
-
-        receiveSnapshotFromServer();
-        game_->render();
     }
 }
 

@@ -2,12 +2,15 @@
 #include <iostream>
 
 Pong::Pong(bool game_started, const std::string& clientOrServer)
-    : window_(sf::VideoMode(1920, 1080), "Pong Multiplayer: " + clientOrServer, sf::Style::Default),
-      game_started_(game_started), left_paddle_(sf::Vector2f(50.0f, 200.0f)),
+    : game_started_(game_started), left_paddle_(sf::Vector2f(50.0f, 200.0f)),
       right_paddle_(sf::Vector2f(50.0f, 200.0f)), ball_(sf::Vector2f(50.0f, 50.0f)), ball_speed_(5.0f, 5.0f),
       left_score_(0), right_score_(0)
 {
-    window_.setFramerateLimit(144);
+    // https://stackoverflow.com/questions/2340281/check-if-a-string-contains-a-string-in-c
+    if (clientOrServer.find("Client") != std::string::npos) {
+        window_.create(sf::VideoMode(1920, 1080), "Pong Multiplayer: " + clientOrServer, sf::Style::Default);
+        window_.setFramerateLimit(144);
+    }
 
     font_.loadFromFile("arial.ttf");
 
