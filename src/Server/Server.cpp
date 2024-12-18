@@ -52,7 +52,8 @@ void Server::run()
     sf::Clock clock;
     sf::Clock game_clock;
 
-    // Run main loop until one of the clients disconnects
+    // Run server until one of the clients disconnects
+    // (this while loop doesn't do that, not enough time to implement)
     while (clients_.size() == 2) {
         // run the game
         if (constexpr size_t framesPerSecond = 144;
@@ -69,7 +70,6 @@ void Server::run()
 
             game_clock.restart();
         }
-        // game_->render(); // DEBUG for now, TODO: Remove this line
     }
 }
 
